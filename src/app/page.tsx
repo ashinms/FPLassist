@@ -58,15 +58,20 @@ export default function Home() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-10 sm:px-6">
-      <header className="mb-8 text-center">
-        <h1
-          className="inline-block bg-gradient-to-r from-[var(--pl-pink)] to-[var(--pl-cyan)] bg-clip-text text-3xl font-extrabold tracking-tight text-transparent sm:text-4xl"
-        >
-          FPLassist
-        </h1>
-        <p className="mt-2 text-sm text-zinc-400">
-          Three agents debate your transfer using live FPL data — not vibes.
-        </p>
+      <header className="relative mb-8 overflow-hidden rounded-2xl">
+        <div
+          className="absolute inset-0"
+          style={{ backgroundImage: "url('/chevron.svg')", backgroundSize: "110px 110px" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-zinc-950" />
+        <div className="relative px-6 py-10 text-center sm:py-12">
+          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            FPLassist
+          </h1>
+          <p className="mt-2 text-sm text-zinc-200">
+            Three agents debate your transfer using live FPL data — not vibes.
+          </p>
+        </div>
       </header>
 
       <div className="flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/30 p-4 sm:flex-row sm:p-5">

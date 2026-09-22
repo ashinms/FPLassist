@@ -122,14 +122,13 @@ export default function VerdictCard({ result }: { result: DebateResult }) {
 
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50">
-      <div
-        className="relative px-5 py-6 sm:px-6"
-        style={{
-          background:
-            "linear-gradient(135deg, color-mix(in srgb, var(--pl-purple) 55%, transparent) 0%, transparent 60%), radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--pl-pink) 20%, transparent), transparent 70%)",
-        }}
-      >
-        <div className="flex items-center justify-between gap-3 sm:gap-6">
+      <div className="relative overflow-hidden px-5 py-6 sm:px-6">
+        <div
+          className="absolute inset-0"
+          style={{ backgroundImage: "url('/chevron.svg')", backgroundSize: "100px 100px" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/55 to-zinc-900/95" />
+        <div className="relative flex items-center justify-between gap-3 sm:gap-6">
           <HeadshotCard player={comparison.out} side="sell" />
 
           <div className="flex flex-shrink-0 flex-col items-center gap-1.5">

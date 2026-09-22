@@ -3,6 +3,7 @@ const HEADERS = { "User-Agent": "Mozilla/5.0" };
 
 export interface FplTeam {
   id: number;
+  code: number;
   name: string;
   short_name: string;
   strength_overall_home: number;
@@ -12,6 +13,7 @@ export interface FplTeam {
 
 export interface FplElement {
   id: number;
+  code: number;
   web_name: string;
   first_name: string;
   second_name: string;
@@ -101,4 +103,12 @@ export function getTeamById(bootstrap: Bootstrap, id: number): FplTeam | undefin
 
 export function getPositionShort(bootstrap: Bootstrap, elementType: number): string {
   return bootstrap.element_types.find((t) => t.id === elementType)?.singular_name_short ?? "?";
+}
+
+export function getTeamBadgeUrl(teamCode: number): string {
+  return `https://resources.premierleague.com/premierleague/badges/70/t${teamCode}.png`;
+}
+
+export function getPlayerPhotoUrl(playerCode: number): string {
+  return `https://resources.premierleague.com/premierleague25/photos/players/110x140/${playerCode}.png`;
 }

@@ -1,4 +1,11 @@
-import { Bootstrap, FplElement, FplFixture, getTeamById } from "./fpl";
+import {
+  Bootstrap,
+  FplElement,
+  FplFixture,
+  getPlayerPhotoUrl,
+  getTeamBadgeUrl,
+  getTeamById,
+} from "./fpl";
 
 export interface UpcomingFixture {
   gw: number;
@@ -11,6 +18,8 @@ export interface PlayerScore {
   playerId: number;
   webName: string;
   teamShortName: string;
+  photoUrl: string;
+  badgeUrl: string;
   priceM: number;
   xGI90: number;
   minutesReliability: number;
@@ -83,6 +92,8 @@ export function computePlayerScore(
     playerId: player.id,
     webName: player.web_name,
     teamShortName: team?.short_name ?? "UNK",
+    photoUrl: getPlayerPhotoUrl(player.code),
+    badgeUrl: team ? getTeamBadgeUrl(team.code) : "",
     priceM: player.now_cost / 10,
     xGI90: Number(xGI90.toFixed(2)),
     minutesReliability: Number(minutesReliability.toFixed(2)),

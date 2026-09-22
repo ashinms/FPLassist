@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
       priceM: p.now_cost / 10,
       photoUrl: getPlayerPhotoUrl(p.code),
       badgeUrl: team ? getTeamBadgeUrl(team.code) : "",
+      status: p.status,
     };
   });
   return NextResponse.json({ results });

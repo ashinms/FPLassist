@@ -11,6 +11,17 @@ export interface PlayerResult {
   priceM: number;
   photoUrl: string;
   badgeUrl: string;
+  status: string;
+}
+
+function AvailabilityDot({ status }: { status: string }) {
+  if (status === "a") return null;
+  return (
+    <span
+      title="Doubtful or unavailable"
+      className="ml-1 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500"
+    />
+  );
 }
 
 interface Props {
@@ -98,7 +109,10 @@ export default function PlayerAutocomplete({ label, accent, onSelect, selected }
           <div className="flex items-center gap-2.5">
             <PlayerAvatar player={selected} size={36} />
             <div>
-              <div className="font-medium text-zinc-100">{selected.webName}</div>
+              <div className="flex items-center font-medium text-zinc-100">
+                {selected.webName}
+                <AvailabilityDot status={selected.status} />
+              </div>
               <div className="text-xs text-zinc-400">
                 {selected.teamShortName} · {selected.position} · £{selected.priceM}m
               </div>
@@ -142,7 +156,10 @@ export default function PlayerAutocomplete({ label, accent, onSelect, selected }
                 className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
               >
                 <PlayerAvatar player={p} size={30} />
-                <span className="flex-1">{p.webName}</span>
+                <span className="flex flex-1 items-center">
+                  {p.webName}
+                  <AvailabilityDot status={p.status} />
+                </span>
                 <span className="text-xs text-zinc-400">
                   {p.teamShortName} · {p.position} · £{p.priceM}m
                 </span>

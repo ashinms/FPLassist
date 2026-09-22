@@ -3,6 +3,7 @@ import {
   FplElement,
   FplFixture,
   getPlayerPhotoUrl,
+  getPositionShort,
   getTeamBadgeUrl,
   getTeamById,
 } from "./fpl";
@@ -18,6 +19,7 @@ export interface PlayerScore {
   playerId: number;
   webName: string;
   teamShortName: string;
+  position: string;
   photoUrl: string;
   badgeUrl: string;
   priceM: number;
@@ -92,6 +94,7 @@ export function computePlayerScore(
     playerId: player.id,
     webName: player.web_name,
     teamShortName: team?.short_name ?? "UNK",
+    position: getPositionShort(bootstrap, player.element_type),
     photoUrl: getPlayerPhotoUrl(player.code),
     badgeUrl: team ? getTeamBadgeUrl(team.code) : "",
     priceM: player.now_cost / 10,

@@ -70,6 +70,24 @@ function PlayerFixtures({ player }: { player: PlayerScore }) {
   );
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  d: "Doubtful",
+  i: "Injured",
+  s: "Suspended",
+  u: "Unavailable",
+  n: "Not in squad",
+};
+
+function AvailabilityFlag({ player }: { player: PlayerScore }) {
+  if (player.status === "a") return null;
+  const label = STATUS_LABELS[player.status] ?? "Availability risk";
+  return (
+    <div className="max-w-[9rem] rounded-md bg-rose-500/15 px-2 py-1 text-center text-[10px] font-medium leading-tight text-rose-300">
+      ⚠ {player.news || label}
+    </div>
+  );
+}
+
 function HeadshotCard({ player, side }: { player: PlayerScore; side: "sell" | "buy" }) {
   const accent = side === "sell" ? "rose" : "emerald";
   return (
@@ -105,6 +123,7 @@ function HeadshotCard({ player, side }: { player: PlayerScore; side: "sell" | "b
           {player.teamShortName} · £{player.priceM}m
         </div>
       </div>
+      <AvailabilityFlag player={player} />
       <span
         className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
           accent === "rose" ? "bg-rose-500/10 text-rose-400" : "bg-emerald-500/10 text-emerald-400"
@@ -215,6 +234,16 @@ export default function VerdictCard({ result }: { result: DebateResult }) {
             directly from live FPL data — not an LLM estimate. Fixture easiness is derived from
             opponent strength over the next {comparison.gwWindow} gameweeks.
           </p>
+          {(comparison.out.position === "GKP" ||
+            comparison.out.position === "DEF" ||
+            comparison.in.position === "GKP" ||
+            comparison.in.position === "DEF") && (
+            <p className="mt-2 text-[11px] leading-relaxed text-amber-500/70">
+              ⚠ This model only measures attacking output (xGI). It doesn&apos;t account for
+              clean sheets or saves, so scores for goalkeepers/defenders will understate their
+              real FPL value.
+            </p>
+          )}
         </div>
 
         <button

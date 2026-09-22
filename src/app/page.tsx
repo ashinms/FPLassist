@@ -22,14 +22,10 @@ export default function Home() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (loading) {
-      setLoadingStep(0);
-      intervalRef.current = setInterval(() => {
-        setLoadingStep((s) => Math.min(s + 1, LOADING_MESSAGES.length - 1));
-      }, 1600);
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
+    if (!loading) return;
+    intervalRef.current = setInterval(() => {
+      setLoadingStep((s) => Math.min(s + 1, LOADING_MESSAGES.length - 1));
+    }, 1600);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -37,6 +33,7 @@ export default function Home() {
 
   async function runDebate() {
     if (!sellPlayer || !buyPlayer) return;
+    setLoadingStep(0);
     setLoading(true);
     setError(null);
     setResult(null);
@@ -62,7 +59,11 @@ export default function Home() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-10 sm:px-6">
       <header className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-zinc-100 sm:text-3xl">FPLassist</h1>
+        <h1
+          className="inline-block bg-gradient-to-r from-[var(--pl-pink)] to-[var(--pl-cyan)] bg-clip-text text-3xl font-extrabold tracking-tight text-transparent sm:text-4xl"
+        >
+          FPLassist
+        </h1>
         <p className="mt-2 text-sm text-zinc-400">
           Three agents debate your transfer using live FPL data — not vibes.
         </p>

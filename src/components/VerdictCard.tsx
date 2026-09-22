@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import type { Comparison } from "@/lib/compare";
 import type { AgentVerdict, ArbiterVerdict } from "@/lib/agents";
@@ -13,9 +14,9 @@ export interface DebateResult {
 }
 
 const VERDICT_STYLES: Record<ArbiterVerdict["verdict"], string> = {
-  BUY: "bg-emerald-500/15 text-emerald-400 ring-emerald-500/30",
-  SELL: "bg-rose-500/15 text-rose-400 ring-rose-500/30",
-  HOLD: "bg-amber-500/15 text-amber-400 ring-amber-500/30",
+  BUY: "bg-emerald-500/15 text-emerald-400 ring-emerald-500/40",
+  SELL: "bg-rose-500/15 text-rose-400 ring-rose-500/40",
+  HOLD: "bg-amber-500/15 text-amber-400 ring-amber-500/40",
 };
 
 const RISK_STYLES: Record<ArbiterVerdict["riskRating"], string> = {
@@ -69,128 +70,187 @@ function PlayerFixtures({ player }: { player: PlayerScore }) {
   );
 }
 
+function HeadshotCard({ player, side }: { player: PlayerScore; side: "sell" | "buy" }) {
+  const accent = side === "sell" ? "rose" : "emerald";
+  return (
+    <div className="flex flex-1 flex-col items-center gap-2 text-center">
+      <div className="relative">
+        <div
+          className={`relative h-20 w-20 overflow-hidden rounded-full bg-zinc-800 ring-2 sm:h-24 sm:w-24 ${
+            accent === "rose" ? "ring-rose-500/40" : "ring-emerald-500/40"
+          }`}
+        >
+          <Image
+            src={player.photoUrl}
+            alt={player.webName}
+            fill
+            unoptimized
+            className="object-cover object-top"
+          />
+        </div>
+        <div className="absolute -bottom-1 -right-1 h-7 w-7 overflow-hidden rounded-full bg-zinc-950 ring-2 ring-zinc-950">
+          <Image
+            src={player.badgeUrl}
+            alt={player.teamShortName}
+            width={28}
+            height={28}
+            unoptimized
+            className="h-full w-full object-contain p-0.5"
+          />
+        </div>
+      </div>
+      <div>
+        <div className="font-semibold text-zinc-100">{player.webName}</div>
+        <div className="text-xs text-zinc-500">
+          {player.teamShortName} · £{player.priceM}m
+        </div>
+      </div>
+      <span
+        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+          accent === "rose" ? "bg-rose-500/10 text-rose-400" : "bg-emerald-500/10 text-emerald-400"
+        }`}
+      >
+        {side === "sell" ? "Transfer Out" : "Transfer In"}
+      </span>
+    </div>
+  );
+}
+
 export default function VerdictCard({ result }: { result: DebateResult }) {
   const [showDebate, setShowDebate] = useState(false);
   const { comparison, bull, bear, arbiter } = result;
 
   return (
-    <div className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span
-            className={`rounded-full px-4 py-1.5 text-lg font-bold ring-1 ${VERDICT_STYLES[arbiter.verdict]}`}
-          >
-            {arbiter.verdict}
-          </span>
-          <span className="text-sm text-zinc-400">
-            Risk:{" "}
-            <span className={`font-semibold ${RISK_STYLES[arbiter.riskRating]}`}>
-              {arbiter.riskRating}
-            </span>
-          </span>
-        </div>
-        <div className="text-right">
-          <div
-            className={`text-xl font-bold ${
-              arbiter.scoreDelta > 0 ? "text-emerald-400" : "text-rose-400"
-            }`}
-          >
-            {arbiter.scoreDelta > 0 ? "+" : ""}
-            {arbiter.scoreDelta}
-          </div>
-          <div className="text-[11px] text-zinc-500">model score delta</div>
-        </div>
-      </div>
-
-      <p className="mt-4 text-sm leading-relaxed text-zinc-300">{arbiter.reasoning}</p>
-
-      <div className="mt-5 overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-zinc-800 text-xs text-zinc-500">
-              <th className="pb-2 text-left font-normal">Model inputs</th>
-              <th className="pb-2 text-right font-normal text-rose-400">
-                Sell · {comparison.out.webName}
-              </th>
-              <th className="pb-2 text-right font-normal text-emerald-400">
-                Buy · {comparison.in.webName}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <StatRow
-              label="Price"
-              sellValue={comparison.out.priceM}
-              buyValue={comparison.in.priceM}
-              format={(n) => `£${n}m`}
-            />
-            <StatRow
-              label="xGI per 90"
-              sellValue={comparison.out.xGI90}
-              buyValue={comparison.in.xGI90}
-            />
-            <StatRow
-              label="Fixture easiness"
-              sellValue={comparison.out.fixtureEasiness}
-              buyValue={comparison.in.fixtureEasiness}
-            />
-            <StatRow
-              label="Minutes reliability"
-              sellValue={comparison.out.minutesReliability}
-              buyValue={comparison.in.minutesReliability}
-            />
-            <StatRow
-              label="Model score"
-              sellValue={comparison.out.score}
-              buyValue={comparison.in.score}
-            />
-          </tbody>
-        </table>
-        <div className="mt-3 grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-          <PlayerFixtures player={comparison.out} />
-          <div className="sm:flex sm:justify-end">
-            <PlayerFixtures player={comparison.in} />
-          </div>
-        </div>
-        <p className="mt-3 text-[11px] leading-relaxed text-zinc-600">
-          Model score = (xGI per 90) × (fixture easiness) × (minutes reliability), computed
-          directly from live FPL data — not an LLM estimate. Fixture easiness is derived from
-          opponent strength over the next {comparison.gwWindow} gameweeks.
-        </p>
-      </div>
-
-      <button
-        onClick={() => setShowDebate((v) => !v)}
-        className="mt-5 flex w-full items-center justify-between rounded-lg border border-zinc-800 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800/50"
+    <div className="w-full overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50">
+      <div
+        className="relative px-5 py-6 sm:px-6"
+        style={{
+          background:
+            "linear-gradient(135deg, color-mix(in srgb, var(--pl-purple) 55%, transparent) 0%, transparent 60%), radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--pl-pink) 20%, transparent), transparent 70%)",
+        }}
       >
-        <span>See the full debate</span>
-        <span className="text-zinc-500">{showDebate ? "−" : "+"}</span>
-      </button>
+        <div className="flex items-center justify-between gap-3 sm:gap-6">
+          <HeadshotCard player={comparison.out} side="sell" />
 
-      {showDebate && (
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-sm font-semibold text-emerald-400">Bull</span>
-              <span className="text-[11px] uppercase tracking-wide text-emerald-500/70">
-                {bull.verdict}
+          <div className="flex flex-shrink-0 flex-col items-center gap-1.5">
+            <span
+              className={`rounded-full px-4 py-1.5 text-base font-bold ring-1 sm:text-lg ${VERDICT_STYLES[arbiter.verdict]}`}
+            >
+              {arbiter.verdict}
+            </span>
+            <div
+              className={`text-lg font-bold ${
+                arbiter.scoreDelta > 0 ? "text-emerald-400" : "text-rose-400"
+              }`}
+            >
+              {arbiter.scoreDelta > 0 ? "+" : ""}
+              {arbiter.scoreDelta}
+            </div>
+            <div className="text-center text-[10px] leading-tight text-zinc-500">
+              score delta
+              <br />
+              Risk:{" "}
+              <span className={`font-semibold ${RISK_STYLES[arbiter.riskRating]}`}>
+                {arbiter.riskRating}
               </span>
             </div>
-            <p className="text-sm leading-relaxed text-zinc-300">{bull.reasoning}</p>
-            <p className="mt-2 text-xs text-emerald-500/80">{bull.keyStat}</p>
           </div>
-          <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-4">
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-sm font-semibold text-rose-400">Bear</span>
-              <span className="text-[11px] uppercase tracking-wide text-rose-500/70">
-                {bear.verdict}
-              </span>
-            </div>
-            <p className="text-sm leading-relaxed text-zinc-300">{bear.reasoning}</p>
-            <p className="mt-2 text-xs text-rose-500/80">{bear.keyStat}</p>
-          </div>
+
+          <HeadshotCard player={comparison.in} side="buy" />
         </div>
-      )}
+      </div>
+
+      <div className="p-5 sm:p-6">
+        <p className="text-sm leading-relaxed text-zinc-300">{arbiter.reasoning}</p>
+
+        <div className="mt-5 overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-zinc-800 text-xs text-zinc-500">
+                <th className="pb-2 text-left font-normal">Model inputs</th>
+                <th className="pb-2 text-right font-normal text-rose-400">
+                  Sell · {comparison.out.webName}
+                </th>
+                <th className="pb-2 text-right font-normal text-emerald-400">
+                  Buy · {comparison.in.webName}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <StatRow
+                label="Price"
+                sellValue={comparison.out.priceM}
+                buyValue={comparison.in.priceM}
+                format={(n) => `£${n}m`}
+              />
+              <StatRow
+                label="xGI per 90"
+                sellValue={comparison.out.xGI90}
+                buyValue={comparison.in.xGI90}
+              />
+              <StatRow
+                label="Fixture easiness"
+                sellValue={comparison.out.fixtureEasiness}
+                buyValue={comparison.in.fixtureEasiness}
+              />
+              <StatRow
+                label="Minutes reliability"
+                sellValue={comparison.out.minutesReliability}
+                buyValue={comparison.in.minutesReliability}
+              />
+              <StatRow
+                label="Model score"
+                sellValue={comparison.out.score}
+                buyValue={comparison.in.score}
+              />
+            </tbody>
+          </table>
+          <div className="mt-3 grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+            <PlayerFixtures player={comparison.out} />
+            <div className="sm:flex sm:justify-end">
+              <PlayerFixtures player={comparison.in} />
+            </div>
+          </div>
+          <p className="mt-3 text-[11px] leading-relaxed text-zinc-600">
+            Model score = (xGI per 90) × (fixture easiness) × (minutes reliability), computed
+            directly from live FPL data — not an LLM estimate. Fixture easiness is derived from
+            opponent strength over the next {comparison.gwWindow} gameweeks.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setShowDebate((v) => !v)}
+          className="mt-5 flex w-full items-center justify-between rounded-lg border border-zinc-800 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800/50"
+        >
+          <span>See the full debate</span>
+          <span className="text-zinc-500">{showDebate ? "−" : "+"}</span>
+        </button>
+
+        {showDebate && (
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="text-sm font-semibold text-emerald-400">Bull</span>
+                <span className="text-[11px] uppercase tracking-wide text-emerald-500/70">
+                  {bull.verdict}
+                </span>
+              </div>
+              <p className="text-sm leading-relaxed text-zinc-300">{bull.reasoning}</p>
+              <p className="mt-2 text-xs text-emerald-500/80">{bull.keyStat}</p>
+            </div>
+            <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-4">
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="text-sm font-semibold text-rose-400">Bear</span>
+                <span className="text-[11px] uppercase tracking-wide text-rose-500/70">
+                  {bear.verdict}
+                </span>
+              </div>
+              <p className="text-sm leading-relaxed text-zinc-300">{bear.reasoning}</p>
+              <p className="mt-2 text-xs text-rose-500/80">{bear.keyStat}</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

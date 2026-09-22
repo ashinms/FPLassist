@@ -62,9 +62,7 @@ export default function Home() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-10 sm:px-6">
       <header className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-zinc-100 sm:text-3xl">
-          FPL Transfer Dilemma Engine
-        </h1>
+        <h1 className="text-2xl font-bold text-zinc-100 sm:text-3xl">FPLassist</h1>
         <p className="mt-2 text-sm text-zinc-400">
           Three agents debate your transfer using live FPL data — not vibes.
         </p>

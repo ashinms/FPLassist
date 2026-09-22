@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FPL Transfer Dilemma Engine",
+  title: "FPLassist",
   description: "Three AI agents debate your next FPL transfer using live data.",
 };
 

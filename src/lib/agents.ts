@@ -43,7 +43,7 @@ export interface ArbiterVerdict {
   reasoning: string;
 }
 
-async function callJsonAgent(
+async function callJsonAgentOnce(
   systemPrompt: string,
   userPrompt: string,
   temperature: number
@@ -52,7 +52,8 @@ async function callJsonAgent(
   const res = await groq.chat.completions.create({
     model: MODEL,
     temperature,
-    max_tokens: 700,
+    max_tokens: 1024,
+    reasoning_effort: "low",
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: systemPrompt },
@@ -62,6 +63,25 @@ async function callJsonAgent(
   const content = res.choices[0]?.message?.content;
   if (!content) throw new Error("Empty response from agent");
   return JSON.parse(content);
+}
+
+/**
+ * gpt-oss models occasionally burn their token budget on hidden reasoning
+ * before emitting valid JSON (Groq returns a 400 json_validate_failed), or
+ * return content that isn't parseable JSON. One retry clears this most of
+ * the time without meaningfully hurting latency.
+ */
+async function callJsonAgent(
+  systemPrompt: string,
+  userPrompt: string,
+  temperature: number
+): Promise<Record<string, unknown>> {
+  try {
+    return await callJsonAgentOnce(systemPrompt, userPrompt, temperature);
+  } catch (err) {
+    console.warn("Agent call failed, retrying once:", err);
+    return await callJsonAgentOnce(systemPrompt, userPrompt, temperature);
+  }
 }
 
 export async function runBull(comparison: Comparison): Promise<AgentVerdict> {

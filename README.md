@@ -6,7 +6,7 @@ Every FPL manager knows the Friday-afternoon spiral: one free transfer, two play
 
 ## How it works
 
-1. **You pick a transfer.** Search the player you'd sell and the player you'd buy.
+1. **You pick a transfer.** Search the player you'd sell and the player you'd buy — or optionally enter your public FPL Team ID first, which scopes "Transfer Out" to your actual squad and checks whether you can afford the swap against your bank.
 2. **A deterministic model scores both players first**, computed in plain code from live FPL data — split into an attacking score and a defensive score, then summed, so goalkeepers and defenders aren't judged on attacking output alone:
 
    ```
@@ -70,7 +70,7 @@ A few honest disclosures about what this model does and doesn't do:
 
 ## What's not built (yet)
 
-- **Team ID auto-import** — entering your public FPL Team ID to auto-load your squad and budget. The FPL API supports this; it just isn't wired up.
+- **Free-transfer / hit-cost tracking is a deliberate cut, not a missing feature.** The FPL API doesn't expose "free transfers banked" as a field — it would have to be reconstructed by walking your full transfer history. More importantly, the Model Score isn't denominated in real FPL points, so it couldn't honestly answer "is this worth a -4 hit" even if free transfers were tracked. That's a calibration problem (see "No backtesting" above), not a data-import problem, and building the tracking without solving calibration first would produce a feature that looks authoritative but isn't. The app's job is judging transfer quality, not your transfer bank — you're better placed to make that call yourself once you see the verdict.
 - **Multi-transfer / wildcard planning** — this handles one transfer at a time.
 - **Automated tests** — verified manually against live data and a real browser session during development.
 

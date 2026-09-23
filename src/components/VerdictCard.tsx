@@ -27,13 +27,13 @@ const RISK_STYLES: Record<ArbiterVerdict["riskRating"], string> = {
 
 function StatRow({
   label,
-  sellValue,
   buyValue,
+  sellValue,
   format,
 }: {
   label: string;
-  sellValue: number;
   buyValue: number;
+  sellValue: number;
   format?: (n: number) => string;
 }) {
   const fmt = format ?? ((n: number) => n.toString());
@@ -41,14 +41,14 @@ function StatRow({
   return (
     <tr className="border-b border-zinc-800 last:border-0">
       <td className="py-2 pr-3 text-xs text-zinc-400">{label}</td>
-      <td className="py-2 pr-3 text-right text-sm text-zinc-300">{fmt(sellValue)}</td>
       <td
-        className={`py-2 text-right text-sm font-medium ${
+        className={`py-2 pr-3 text-right text-sm font-medium ${
           buyBetter ? "text-emerald-400" : "text-zinc-300"
         }`}
       >
         {fmt(buyValue)}
       </td>
+      <td className="py-2 text-right text-sm text-zinc-300">{fmt(sellValue)}</td>
     </tr>
   );
 }
@@ -148,7 +148,7 @@ export default function VerdictCard({ result }: { result: DebateResult }) {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/55 to-zinc-900/95" />
         <div className="relative flex items-center justify-between gap-3 sm:gap-6">
-          <HeadshotCard player={comparison.out} side="sell" />
+          <HeadshotCard player={comparison.in} side="buy" />
 
           <div className="flex flex-shrink-0 flex-col items-center gap-1.5">
             <span
@@ -174,7 +174,7 @@ export default function VerdictCard({ result }: { result: DebateResult }) {
             </div>
           </div>
 
-          <HeadshotCard player={comparison.in} side="buy" />
+          <HeadshotCard player={comparison.out} side="sell" />
         </div>
       </div>
 
@@ -186,57 +186,57 @@ export default function VerdictCard({ result }: { result: DebateResult }) {
             <thead>
               <tr className="border-b border-zinc-800 text-xs text-zinc-500">
                 <th className="pb-2 text-left font-normal">Model inputs</th>
-                <th className="pb-2 text-right font-normal text-rose-400">
-                  Sell · {comparison.out.webName}
-                </th>
                 <th className="pb-2 text-right font-normal text-emerald-400">
                   Buy · {comparison.in.webName}
+                </th>
+                <th className="pb-2 text-right font-normal text-rose-400">
+                  Sell · {comparison.out.webName}
                 </th>
               </tr>
             </thead>
             <tbody>
               <StatRow
                 label="Price"
-                sellValue={comparison.out.priceM}
                 buyValue={comparison.in.priceM}
+                sellValue={comparison.out.priceM}
                 format={(n) => `£${n}m`}
               />
               <StatRow
                 label="xGI per 90"
-                sellValue={comparison.out.xGI90}
                 buyValue={comparison.in.xGI90}
+                sellValue={comparison.out.xGI90}
               />
               <StatRow
                 label="Fixture easiness"
-                sellValue={comparison.out.fixtureEasiness}
                 buyValue={comparison.in.fixtureEasiness}
+                sellValue={comparison.out.fixtureEasiness}
               />
               <StatRow
                 label="Minutes reliability"
-                sellValue={comparison.out.minutesReliability}
                 buyValue={comparison.in.minutesReliability}
+                sellValue={comparison.out.minutesReliability}
               />
               <StatRow
                 label="Attacking score"
-                sellValue={comparison.out.attackScore}
                 buyValue={comparison.in.attackScore}
+                sellValue={comparison.out.attackScore}
               />
               <StatRow
                 label="Defensive score"
-                sellValue={comparison.out.defenseScore}
                 buyValue={comparison.in.defenseScore}
+                sellValue={comparison.out.defenseScore}
               />
               <StatRow
                 label="Total score"
-                sellValue={comparison.out.score}
                 buyValue={comparison.in.score}
+                sellValue={comparison.out.score}
               />
             </tbody>
           </table>
           <div className="mt-3 grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-            <PlayerFixtures player={comparison.out} />
+            <PlayerFixtures player={comparison.in} />
             <div className="sm:flex sm:justify-end">
-              <PlayerFixtures player={comparison.in} />
+              <PlayerFixtures player={comparison.out} />
             </div>
           </div>
           <p className="mt-3 text-[11px] leading-relaxed text-zinc-600">

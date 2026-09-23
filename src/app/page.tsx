@@ -181,17 +181,17 @@ export default function Home() {
 
       <div className="flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/30 p-4 sm:flex-row sm:p-5">
         <PlayerAutocomplete
+          label="Transfer in"
+          accent="buy"
+          selected={buyPlayer}
+          onSelect={setBuyPlayer}
+        />
+        <PlayerAutocomplete
           label="Transfer out"
           accent="sell"
           selected={sellPlayer}
           onSelect={setSellPlayer}
           squad={teamData?.squad}
-        />
-        <PlayerAutocomplete
-          label="Transfer in"
-          accent="buy"
-          selected={buyPlayer}
-          onSelect={setBuyPlayer}
         />
       </div>
 

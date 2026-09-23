@@ -51,11 +51,32 @@ export interface FplElementType {
   singular_name_short: string;
 }
 
+export interface FplEvent {
+  id: number;
+  is_current: boolean;
+  is_next: boolean;
+}
+
 export interface Bootstrap {
   teams: FplTeam[];
   elements: FplElement[];
   element_types: FplElementType[];
+  events: FplEvent[];
 }
+
+export interface FplPick {
+  element: number;
+}
+
+export interface FplPicksResponse {
+  entry_history: {
+    bank: number;
+    value: number;
+  };
+  picks: FplPick[];
+}
+
+export class TeamNotFoundError extends Error {}
 
 let bootstrapCache: { data: Bootstrap; fetchedAt: number } | null = null;
 let fixturesCache: { data: FplFixture[]; fetchedAt: number } | null = null;
@@ -114,4 +135,19 @@ export function getTeamBadgeUrl(teamCode: number): string {
 
 export function getPlayerPhotoUrl(playerCode: number): string {
   return `https://resources.premierleague.com/premierleague25/photos/players/110x140/${playerCode}.png`;
+}
+
+export function getCurrentEventId(bootstrap: Bootstrap): number {
+  const current = bootstrap.events.find((e) => e.is_current);
+  const next = bootstrap.events.find((e) => e.is_next);
+  return current?.id ?? next?.id ?? 1;
+}
+
+export async function getTeamPicks(teamId: number, eventId: number): Promise<FplPicksResponse> {
+  const res = await fetch(`${FPL_BASE}/entry/${teamId}/event/${eventId}/picks/`, {
+    headers: HEADERS,
+  });
+  if (res.status === 404) throw new TeamNotFoundError(`Team ${teamId} not found`);
+  if (!res.ok) throw new Error(`FPL entry picks failed: ${res.status}`);
+  return (await res.json()) as FplPicksResponse;
 }

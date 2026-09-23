@@ -2,7 +2,11 @@
 
 Three AI agents debate your Fantasy Premier League transfer using live data.
 
+![FPLassist verdict card](docs/screenshot.png)
+
 Every FPL manager knows the Friday-afternoon spiral: one free transfer, two players, and a dozen conflicting signals (form, fixtures, rotation risk, price rises). FPLassist runs that debate for you, grounded in real, live Premier League data, and not simply an LLM's guess.
+
+**Live demo:** [fplassist.vercel.app](https://fplassist.vercel.app/)
 
 ## How it works
 

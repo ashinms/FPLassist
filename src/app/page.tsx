@@ -11,6 +11,34 @@ const LOADING_MESSAGES = [
   "Arbiter is weighing the verdict…",
 ];
 
+interface TeamData {
+  squad: PlayerResult[];
+  bankM: number;
+  teamValueM: number;
+}
+
+function AffordabilityNote({
+  bankM,
+  sellPlayer,
+  buyPlayer,
+}: {
+  bankM: number;
+  sellPlayer: PlayerResult;
+  buyPlayer: PlayerResult;
+}) {
+  const netCost = Number((buyPlayer.priceM - sellPlayer.priceM).toFixed(1));
+  const affordable = netCost <= bankM;
+  const costLine =
+    netCost <= 0
+      ? `frees up £${Math.abs(netCost)}m`
+      : `costs £${netCost}m, you have £${bankM}m in the bank`;
+  return (
+    <p className={`mt-3 text-sm ${affordable ? "text-emerald-400" : "text-rose-400"}`}>
+      {affordable ? `✓ Affordable — this transfer ${costLine}.` : `✗ Over budget — this transfer ${costLine}.`}
+    </p>
+  );
+}
+
 export default function Home() {
   const [sellPlayer, setSellPlayer] = useState<PlayerResult | null>(null);
   const [buyPlayer, setBuyPlayer] = useState<PlayerResult | null>(null);
@@ -20,6 +48,42 @@ export default function Home() {
   const [result, setResult] = useState<DebateResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const [teamIdInput, setTeamIdInput] = useState("");
+  const [teamData, setTeamData] = useState<TeamData | null>(null);
+  const [teamLoading, setTeamLoading] = useState(false);
+  const [teamError, setTeamError] = useState<string | null>(null);
+
+  async function loadTeam() {
+    const id = Number(teamIdInput);
+    if (!id || id < 1) {
+      setTeamError("Enter a valid team ID");
+      return;
+    }
+    setTeamLoading(true);
+    setTeamError(null);
+    try {
+      const res = await fetch(`/api/team/${id}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setTeamError(data.error ?? "Could not load team");
+        return;
+      }
+      setTeamData(data);
+      setSellPlayer(null);
+    } catch {
+      setTeamError("Network error loading team");
+    } finally {
+      setTeamLoading(false);
+    }
+  }
+
+  function clearTeam() {
+    setTeamData(null);
+    setTeamIdInput("");
+    setTeamError(null);
+    setSellPlayer(null);
+  }
 
   useEffect(() => {
     if (!loading) return;
@@ -74,12 +138,54 @@ export default function Home() {
         </div>
       </header>
 
+      <div className="mb-4 rounded-2xl border border-zinc-800 bg-zinc-900/30 p-4">
+        {teamData ? (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-zinc-300">
+              Squad loaded —{" "}
+              <span className="text-zinc-400">
+                Bank £{teamData.bankM}m · Team value £{teamData.teamValueM}m
+              </span>
+            </p>
+            <button
+              onClick={clearTeam}
+              className="text-xs text-zinc-500 hover:text-zinc-300"
+            >
+              Clear
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <label className="text-xs font-semibold uppercase tracking-wide text-zinc-400 sm:mr-1">
+              FPL Team ID (optional)
+            </label>
+            <input
+              value={teamIdInput}
+              onChange={(e) => setTeamIdInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && loadTeam()}
+              placeholder="e.g. 1234567"
+              inputMode="numeric"
+              className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:ring-1 focus:ring-zinc-500"
+            />
+            <button
+              onClick={loadTeam}
+              disabled={teamLoading}
+              className="rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-800 disabled:opacity-50"
+            >
+              {teamLoading ? "Loading…" : "Load my team"}
+            </button>
+          </div>
+        )}
+        {teamError && <p className="mt-2 text-xs text-rose-400">{teamError}</p>}
+      </div>
+
       <div className="flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/30 p-4 sm:flex-row sm:p-5">
         <PlayerAutocomplete
           label="Transfer out"
           accent="sell"
           selected={sellPlayer}
           onSelect={setSellPlayer}
+          squad={teamData?.squad}
         />
         <PlayerAutocomplete
           label="Transfer in"
@@ -88,6 +194,10 @@ export default function Home() {
           onSelect={setBuyPlayer}
         />
       </div>
+
+      {teamData && sellPlayer && buyPlayer && (
+        <AffordabilityNote bankM={teamData.bankM} sellPlayer={sellPlayer} buyPlayer={buyPlayer} />
+      )}
 
       <div className="mt-4 flex items-center justify-between gap-4">
         <label className="flex items-center gap-2 text-sm text-zinc-400">

@@ -29,6 +29,8 @@ interface Props {
   accent: "buy" | "sell";
   onSelect: (player: PlayerResult) => void;
   selected: PlayerResult | null;
+  /** When provided, search is scoped to this squad (client-side, no API call) instead of the full player database. */
+  squad?: PlayerResult[];
 }
 
 function PlayerAvatar({ player, size }: { player: PlayerResult; size: number }) {
@@ -55,14 +57,15 @@ function PlayerAvatar({ player, size }: { player: PlayerResult; size: number }) 
   );
 }
 
-export default function PlayerAutocomplete({ label, accent, onSelect, selected }: Props) {
+export default function PlayerAutocomplete({ label, accent, onSelect, selected, squad }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PlayerResult[]>([]);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Full-database mode: debounced search against the live FPL player list.
   useEffect(() => {
-    if (!query.trim() || selected) return;
+    if (squad || !query.trim() || selected) return;
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
@@ -80,7 +83,7 @@ export default function PlayerAutocomplete({ label, accent, onSelect, selected }
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query, selected]);
+  }, [query, selected, squad]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -91,6 +94,15 @@ export default function PlayerAutocomplete({ label, accent, onSelect, selected }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Squad mode is pure derived state — filter the loaded 15 client-side on every
+  // render instead of syncing it through an effect + setState.
+  const displayResults = squad
+    ? (() => {
+        const q = query.trim().toLowerCase();
+        return q ? squad.filter((p) => p.webName.toLowerCase().includes(q)) : squad;
+      })()
+    : results;
 
   const accentRing = accent === "buy" ? "focus-within:ring-emerald-500" : "focus-within:ring-rose-500";
 
@@ -136,17 +148,17 @@ export default function PlayerAutocomplete({ label, accent, onSelect, selected }
           onChange={(e) => {
             const value = e.target.value;
             setQuery(value);
-            if (!value.trim()) setResults([]);
+            if (!squad && !value.trim()) setResults([]);
           }}
-          onFocus={() => results.length > 0 && setOpen(true)}
-          placeholder="Search player name…"
+          onFocus={() => (displayResults.length > 0 || squad) && setOpen(true)}
+          placeholder={squad ? "Search your squad…" : "Search player name…"}
           className={`w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-zinc-100 placeholder-zinc-500 outline-none ring-1 ring-transparent transition ${accentRing}`}
         />
       )}
 
-      {open && results.length > 0 && !selected && (
+      {open && displayResults.length > 0 && !selected && (
         <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl">
-          {results.map((p) => (
+          {displayResults.map((p) => (
             <li key={p.id}>
               <button
                 onClick={() => {

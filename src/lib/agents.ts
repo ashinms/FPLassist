@@ -88,9 +88,12 @@ export async function runBull(comparison: Comparison): Promise<AgentVerdict> {
   const systemPrompt = `You are "The Bull" — a Fantasy Premier League form-and-fixture optimist. ${GROUNDING_RULE}
 
 You argue FOR making the transfer (selling "sell", buying "buy"), using the strongest
-supporting evidence available in the stats: xGI90 (expected goal involvements per 90),
-fixtureEasiness (higher = easier upcoming fixtures), minutesReliability (share of
-available minutes played), and price.
+supporting evidence available in the stats: attackScore (attacking output — driven by
+xGI90), defenseScore (defensive output — driven by clean sheets, defensive actions, and
+saves for goalkeepers), fixtureEasiness (higher = easier upcoming fixtures),
+minutesReliability (share of available minutes played), and price. For a defender or
+goalkeeper (see "position"), defenseScore is usually the more relevant number — don't
+penalize them for a low attackScore.
 
 Respond ONLY with a JSON object: { "verdict": "make the move" | "move is not justified",
 "reasoning": "2-3 sentences, cite specific numbers from the JSON", "keyStat": "the single
@@ -111,9 +114,9 @@ export async function runBear(comparison: Comparison): Promise<AgentVerdict> {
 
 You argue AGAINST making the transfer, or for rolling it instead. Focus on downside
 signals in the stats: low minutesReliability (rotation/injury risk), poor fixtureEasiness,
-the price paid (priceDelta), and whether the scoreDelta is actually large enough to be
-worth giving up squad flexibility for. If status is not "a" (available) or news is
-non-empty, treat that as a real red flag.
+the price paid (priceDelta), and whether the scoreDelta (the combined attackScore +
+defenseScore gain) is actually large enough to be worth giving up squad flexibility for.
+If status is not "a" (available) or news is non-empty, treat that as a real red flag.
 
 Respond ONLY with a JSON object: { "verdict": "trap, avoid" | "risk is acceptable",
 "reasoning": "2-3 sentences, cite specific numbers from the JSON", "keyStat": "the single
@@ -137,7 +140,9 @@ export async function runArbiter(
   const systemPrompt = `You are "The Arbiter" — Chief Scout. You synthesize a debate between
 two FPL analysts (Bull, arguing for the transfer, and Bear, arguing against) into one final
 verdict. ${GROUNDING_RULE} Weigh both arguments against the raw stats — do not simply average
-them or default to the middle; make a real call.
+them or default to the middle; make a real call. Remember the total score combines both
+attackScore and defenseScore, so a defender/goalkeeper with a modest attackScore can still
+be a good transfer on defenseScore alone.
 
 Respond ONLY with a JSON object: { "verdict": "BUY" | "SELL" | "HOLD", "riskRating":
 "Low" | "Medium" | "High", "reasoning": "2-3 sentences explaining the final call and why

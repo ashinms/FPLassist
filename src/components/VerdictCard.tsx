@@ -217,7 +217,17 @@ export default function VerdictCard({ result }: { result: DebateResult }) {
                 buyValue={comparison.in.minutesReliability}
               />
               <StatRow
-                label="Model score"
+                label="Attacking score"
+                sellValue={comparison.out.attackScore}
+                buyValue={comparison.in.attackScore}
+              />
+              <StatRow
+                label="Defensive score"
+                sellValue={comparison.out.defenseScore}
+                buyValue={comparison.in.defenseScore}
+              />
+              <StatRow
+                label="Total score"
                 sellValue={comparison.out.score}
                 buyValue={comparison.in.score}
               />
@@ -230,20 +240,12 @@ export default function VerdictCard({ result }: { result: DebateResult }) {
             </div>
           </div>
           <p className="mt-3 text-[11px] leading-relaxed text-zinc-600">
-            Model score = (xGI per 90) × (fixture easiness) × (minutes reliability), computed
-            directly from live FPL data — not an LLM estimate. Fixture easiness is derived from
-            opponent strength over the next {comparison.gwWindow} gameweeks.
+            Attacking score = (xGI per 90) × (fixture easiness) × (minutes reliability). Defensive
+            score = (clean sheets per 90 + defensive contribution rate + save rate) × (fixture
+            easiness) × (minutes reliability). Total score is the sum of both — computed directly
+            from live FPL data, not an LLM estimate. Fixture easiness is derived from opponent
+            strength over the next {comparison.gwWindow} gameweeks.
           </p>
-          {(comparison.out.position === "GKP" ||
-            comparison.out.position === "DEF" ||
-            comparison.in.position === "GKP" ||
-            comparison.in.position === "DEF") && (
-            <p className="mt-2 text-[11px] leading-relaxed text-amber-500/70">
-              ⚠ This model only measures attacking output (xGI). It doesn&apos;t account for
-              clean sheets or saves, so scores for goalkeepers/defenders will understate their
-              real FPL value.
-            </p>
-          )}
         </div>
 
         <button

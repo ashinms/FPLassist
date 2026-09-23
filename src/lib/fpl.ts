@@ -27,6 +27,9 @@ export interface FplElement {
   minutes: number;
   starts: number;
   expected_goal_involvements_per_90: number;
+  clean_sheets_per_90: number;
+  defensive_contribution_per_90: number;
+  saves_per_90: number;
   total_points: number;
   points_per_game: string;
   selected_by_percent: string;
